@@ -27,6 +27,10 @@ new Vue({
     barAmount: 15,
     barSize: 196,
     bpm: 120,
+    grid: 4,
+    sampleRate: 44100,
+    sizeSlider: HTMLInputElement,
+    timesignature: "4/4",
     audioClips: []
   },
   render: h => h(App)

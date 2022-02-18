@@ -4,13 +4,13 @@
             <div>TIME:</div>
             <div class="control-panel-highlight">00:02:58</div>
             <div>TEMPO:</div>
-            <div class="control-panel-highlight">120</div>
+            <div class="control-panel-highlight">{{$root.$data.bpm}}</div>
             <div>BAR:</div>
             <div class="control-panel-highlight">2</div>
             <div>GRID:</div>
-            <div class="control-panel-highlight">4</div>
+            <div class="control-panel-highlight">{{$root.$data.grid}}</div>
             <div>BEAT:</div>
-            <div class="control-panel-highlight">3/4</div>
+            <div class="control-panel-highlight">{{$root.$data.timesignature}}</div>
         </div>
         <div class="control-panel-buttons">
             <ControlButton>
@@ -50,10 +50,13 @@
     })
 
     export default class ControlPanel extends Vue {
+        mounted(): void {
+            this.$root.$data.sizeSlider = document.getElementById("sizeSlider") as HTMLInputElement;
+        }
+
         updateSizeText(): void {
-            const sizeSlider = document.getElementById("sizeSlider") as HTMLInputElement;
             const sizeText = document.getElementById("sizeText") as HTMLElement;
-            sizeText.innerText = sizeSlider.value;
+            sizeText.innerText = this.$root.$data.sizeSlider.value;
         }
     }
 </script>

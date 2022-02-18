@@ -6,7 +6,7 @@
 				:style="{ backgroundColor: bgColor }"
 			></div>
 			<div class="track-content">
-				{{ this.name }}
+				{{ name }}
 			</div>
 		</div>
 		<div
@@ -17,7 +17,7 @@
 			"
 			@dragover.prevent="setDragOver(true)"
 			@dragleave.prevent="setDragOver(false)"
-			:class="{ 'drag-over': this.isDragOver }"
+			:class="{ 'drag-over': isDragOver }"
 			ref="track_waves_container"
 		></div>
 		<div class="track-height-spacer" ref="track_waves"></div>
@@ -27,7 +27,7 @@
 <script lang="ts">
 import { Audio } from 'arrdio';
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { AudioClip } from '../../structs/AudioClip'
+import { AudioClip } from '../../structs/AudioClip';
 
 @Component
 export default class Track extends Vue {
@@ -50,19 +50,18 @@ export default class Track extends Vue {
 
 	upload(e: DragEvent): void {
 		const trackWaves = this.$refs['track_waves'] as HTMLElement;
-		const sizeSlider = document.getElementById(
-			'sizeSlider'
-		) as HTMLInputElement;
+		const sizeSlider = this.$root.$data.sizeSlider;
 		const canvas = document.createElement('canvas');
 		trackWaves.appendChild(canvas);
 
-		const offsetLeft = (this.$refs['track_waves_container'] as HTMLElement).offsetLeft;
+		const offsetLeft = (this.$refs['track_waves_container'] as HTMLElement)
+			.offsetLeft;
 		const position = e.offsetX + Math.floor(window.scrollX);
 
 		canvas.setAttribute('style', 'background-color:' + this.bgColor + 'aa');
 		canvas.style.position = 'absolute';
 		canvas.height = trackWaves.clientHeight;
-		canvas.style.left = (position + offsetLeft) + 'px';
+		canvas.style.left = position + offsetLeft + 'px';
 
 		if (e.dataTransfer === null) {
 			console.error('Data transfer failed');
@@ -72,7 +71,6 @@ export default class Track extends Vue {
 		this.fileReader.readAsArrayBuffer(e.dataTransfer.files[0]);
 
 		this.fileReader.onloadend = async () => {
-
 			const wasm = await import('arrdio');
 
 			this.Audio = wasm.load_data(
@@ -83,7 +81,12 @@ export default class Track extends Vue {
 
 			const width = this.Audio.get_sample_length();
 
-			this.audioClip = new AudioClip(this.Audio, this.sampleRate, position * parseInt(sizeSlider.value), width);
+			this.audioClip = new AudioClip(
+				this.Audio,
+				this.sampleRate,
+				position * parseInt(sizeSlider.value),
+				width
+			);
 
 			console.log(this.audioClip);
 
@@ -98,9 +101,7 @@ export default class Track extends Vue {
 	resize(canvas: HTMLCanvasElement): void {
 		const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-		const sizeSlider = document.getElementById(
-			'sizeSlider'
-		) as HTMLInputElement;
+		const sizeSlider = this.$root.$data.sizeSlider
 		const offsetLeft = (this.$refs['track_waves_container'] as HTMLElement).offsetLeft;
 
 		ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
@@ -123,7 +124,10 @@ export default class Track extends Vue {
 		const negative = AudioData.get_negative();
 
 		canvas.width = Math.min(positive.length, 20000);
-		canvas.style.left = Math.round((this.audioClip?.position || 0) * scale) + offsetLeft + 'px';
+		canvas.style.left =
+			Math.round((this.audioClip?.position || 0) * scale) +
+			offsetLeft +
+			'px';
 
 		for (let i = 0; i < positive.length; i++) {
 			const posSample = positive[i];
@@ -135,10 +139,12 @@ export default class Track extends Vue {
 				ctx.fillRect(i, MIDDLE, 1, Math.floor(negSample * -FACTOR));
 		}
 
-		const positionEnd =  Math.ceil((canvas.offsetLeft + canvas.offsetWidth) / this.$root.$data.barSize);
+		const positionEnd = Math.ceil(
+			(canvas.offsetLeft + canvas.offsetWidth) / this.$root.$data.barSize
+		);
 		if (positionEnd > this.$root.$data.barAmount) {
 			this.$root.$data.barAmount = positionEnd;
-			console.log(positionEnd)
+			console.log(positionEnd);
 			this.$emit('someEvent');
 		}
 	}

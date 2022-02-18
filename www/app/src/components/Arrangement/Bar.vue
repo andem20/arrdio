@@ -1,9 +1,9 @@
 <template>
     <div class="beat-container">
-        <div class="beat">{{this.beat}}</div>
-        <div></div>
-        <div></div>
-        <div></div>
+        <div class="beat" :style="{'width': beatSize + 'px'}">{{beat}}</div>
+        <div :style="{'width': beatSize + 'px'}"></div>
+        <div :style="{'width': beatSize + 'px'}"></div>
+        <div :style="{'width': beatSize + 'px'}"></div>
     </div>
 </template>
 
@@ -12,7 +12,8 @@
 
     @Component
     export default class  extends Vue {
-        @Prop() beat?: number;
+        @Prop() beat!: number;
+        @Prop() beatSize?: number;
     }
 </script>
 
