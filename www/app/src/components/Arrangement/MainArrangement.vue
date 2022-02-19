@@ -11,7 +11,7 @@
 		<div class="arrangement-grid">
 			<Bar 
                 :beat="i" v-for="i in barsAmount" :key="i" 
-                :beatSize="beatSize"
+                :beatSize="beatSize - 2"
             />
 		</div>
 		<div
@@ -41,24 +41,30 @@ import TimeStamp from './TimeStamp.vue';
 })
 export default class MainArrangement extends Vue {
 	barsAmount = this.$root.$data.barAmount;
-    beatSize = 50;
+	beatSize = 0;
 
 	mounted(): void {
 		const sizeSlider = document.getElementById(
 			'sizeSlider'
 		) as HTMLInputElement;
 
+		this.beatSize = this.calcBeatSize();
+
 		sizeSlider.addEventListener('change', () => {
-			// sampleRate / (bpm / 60s) = pixels
-			const scale = 1 / parseInt(sizeSlider.value);
-			const sampleRate = scale * this.$root.$data.sampleRate;
-			const bpm = this.$root.$data.bpm;
-			this.beatSize = sampleRate / (bpm / 60);
+			this.beatSize = this.calcBeatSize();
 		});
 	}
 
 	showEvent(): void {
 		this.barsAmount = this.$root.$data.barAmount;
+	}
+
+	calcBeatSize(): number {
+		const scale = this.$root.$data.scale;
+		const sampleRate = scale * this.$root.$data.sampleRate;
+		const bpm = this.$root.$data.bpm;
+
+		return sampleRate / (bpm / 60);
 	}
 }
 </script>
@@ -75,7 +81,7 @@ export default class MainArrangement extends Vue {
 	position: absolute;
 	display: flex;
 	height: 100%;
-	margin-left: 15rem;
+	margin-left: calc(15rem + 2px);
 	top: 2rem;
 }
 

@@ -101,12 +101,11 @@ export default class Track extends Vue {
 	resize(canvas: HTMLCanvasElement): void {
 		const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-		const sizeSlider = this.$root.$data.sizeSlider
 		const offsetLeft = (this.$refs['track_waves_container'] as HTMLElement).offsetLeft;
 
 		ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
 
-		const scale = 1 / parseInt(sizeSlider.value);
+		const scale = this.$root.$data.scale;
 		const chunkSize = Math.floor(this.sampleRate / (scale * this.sampleRate));
 
 		// Split positive and negative numbers

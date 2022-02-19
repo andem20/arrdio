@@ -30,9 +30,10 @@
             <input
                 type="range"
                 min="1"
-                max="500"
+                max="2000"
                 id="sizeSlider"
                 @input="updateSizeText"
+                value="500"
             />
             <span id="sizeText"></span>
         </div>
@@ -51,12 +52,18 @@
 
     export default class ControlPanel extends Vue {
         mounted(): void {
-            this.$root.$data.sizeSlider = document.getElementById("sizeSlider") as HTMLInputElement;
+            const sizeSlider = document.getElementById("sizeSlider") as HTMLInputElement;
+            this.$root.$data.sizeSlider = sizeSlider;
+            this.$root.$data.scale = 1 / parseInt(sizeSlider.value);
+
+            this.updateSizeText();
         }
 
         updateSizeText(): void {
+            const sizeValue = this.$root.$data.sizeSlider.value;
             const sizeText = document.getElementById("sizeText") as HTMLElement;
-            sizeText.innerText = this.$root.$data.sizeSlider.value;
+            sizeText.innerText = sizeValue;
+            this.$root.$data.scale = 1 / parseInt(sizeValue);
         }
     }
 </script>

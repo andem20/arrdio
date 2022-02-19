@@ -30,6 +30,7 @@ new Vue({
     grid: 4,
     sampleRate: 44100,
     sizeSlider: HTMLInputElement,
+    scale: 0,
     timesignature: "4/4",
     audioClips: []
   },

@@ -13,7 +13,7 @@
     @Component
     export default class  extends Vue {
         @Prop() beat!: number;
-        @Prop() beatSize?: number;
+        @Prop() beatSize!: number;
     }
 </script>
 
@@ -21,7 +21,6 @@
     .beat-container {
         height: 100%;
         display: flex;
-        margin-left: 2px;
     }
 
     .beat-container > div {
