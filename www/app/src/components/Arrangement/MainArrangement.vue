@@ -5,7 +5,7 @@
 				v-for="i in 10"
 				:key="i"
 				:value="new Date((i * 5 - 5) * 1000).toISOString().substring(11, 19)"
-                :style="{'margin-right': '17rem'}"
+                :style="{'width': timestampSize + 4 + 'px'}"
 			/>
 		</div>
 		<div class="arrangement-grid">
@@ -42,6 +42,7 @@ import TimeStamp from './TimeStamp.vue';
 export default class MainArrangement extends Vue {
 	barsAmount = this.$root.$data.barAmount;
 	beatSize = 0;
+	timestampSize = 0;
 
 	mounted(): void {
 		const sizeSlider = document.getElementById(
@@ -49,9 +50,11 @@ export default class MainArrangement extends Vue {
 		) as HTMLInputElement;
 
 		this.beatSize = this.calcBeatSize();
+		this.timestampSize = this.calcTimestampSize();
 
 		sizeSlider.addEventListener('change', () => {
 			this.beatSize = this.calcBeatSize();
+			this.timestampSize = this.calcTimestampSize();
 		});
 	}
 
@@ -65,6 +68,13 @@ export default class MainArrangement extends Vue {
 		const bpm = this.$root.$data.bpm;
 
 		return sampleRate / (bpm / 60);
+	}
+
+	calcTimestampSize(): number {
+		const scale = this.$root.$data.scale;
+		const sampleRate = this.$root.$data.sampleRate;
+
+		return scale * sampleRate * 5;
 	}
 }
 </script>
