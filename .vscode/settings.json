@@ -1,0 +1,5 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./arrdio-wasm/Cargo.toml"
+    ]
+}
