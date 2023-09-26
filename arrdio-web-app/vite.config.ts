@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
-
+import wasm from 'vite-plugin-wasm'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
@@ -7,6 +7,7 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [
     vue(),
+    wasm()
   ],
   resolve: {
     alias: {
@@ -14,3 +15,4 @@ export default defineConfig({
     }
   }
 })
+false
