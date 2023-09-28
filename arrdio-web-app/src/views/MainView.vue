@@ -13,7 +13,7 @@ import Arrangement from './subviews/Arrangement.vue';
 <style scoped>
   .main-container {
     height: 100vh;
-    min-height: 800px;
+    /* min-height: 800px; */
     overflow: hidden;
   }
 </style>

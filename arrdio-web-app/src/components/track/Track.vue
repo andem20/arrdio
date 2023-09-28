@@ -10,13 +10,16 @@
 
     const trackInfoWidth = 200;
     const trackHeight = 100;
+    const trackWidth = 3000;
 </script>
 <template>
-    <div :style="`height: ${trackHeight}px`">
+    <div class="track" :style="`height: ${trackHeight}px; width: ${trackWidth}px;`">
         <TrackInfo :name="name" :number="number" :style="`width: ${trackInfoWidth}px; height: ${trackHeight}px`" />
-        <TrackLine :color="color" :offset-left="trackInfoWidth" />
+        <TrackLine :color="color" />
     </div>
 </template>
-<style>
-
+<style scoped>
+    .track {
+        display: flex;
+    }
 </style>

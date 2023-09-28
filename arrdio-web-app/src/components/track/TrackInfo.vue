@@ -14,9 +14,11 @@
 
 <style lang="css">
     .track-info-container {
-        position: fixed;
+        position: sticky;
+        left: 0;
         background-color: #333333ee;
         color: #ffffff;
         z-index: 1000;
+        flex-shrink: 0;
     }
 </style>

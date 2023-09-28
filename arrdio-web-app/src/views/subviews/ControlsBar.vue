@@ -11,6 +11,6 @@
 <style scoped>
   .controls-bar {
     background-color: blanchedalmond;
-    height: 200px;
+    height: 100px;
   }
 </style>
