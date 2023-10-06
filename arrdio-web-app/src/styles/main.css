@@ -1,8 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500&display=swap');
+
 body {
-    margin: 0;
+  margin: 0;
+  font-family: 'Roboto';
+  color: #ffffff;
 }
 
 .row-component {
-    width: 100%;
-    display: block;
+  width: 100%;
+  display: block;
 }

@@ -5,15 +5,14 @@
     })
 </script>
 <template>
-    <div class="track-line" :style="`background-color: ${color}; margin-left: ${offsetLeft}px; width: 100%`">
-            <input type="file" name="" id="" draggable="true" style="width: 100%; height: 100px;">
-        </div>
+    <div class="track-line drag-over" :style="`background-color: ${color}; margin-left: ${offsetLeft}px; width: 100px`"></div>
 </template>
-<style>
+<style scoped>
     .track-line {
         width: 100%;
         height: 100%;
-        opacity: 0.8;
+        opacity: 0.7;
         flex-shrink: 0;
+        z-index: 900;
     }
 </style>

@@ -8,7 +8,10 @@
 
 <template>
     <div class="track-info-container">
-        {{ name + " " + number }}
+        <div class="track-info-color" :style="`background-color: ${color}`"></div>
+        <div class="track-info-content">
+            {{ name + " " + number }}
+        </div>
     </div>
 </template>
 
@@ -16,9 +19,19 @@
     .track-info-container {
         position: sticky;
         left: 0;
-        background-color: #333333ee;
+        background-color: #404D4Cee;
         color: #ffffff;
         z-index: 1000;
         flex-shrink: 0;
+        display: flex;
     }
-</style>
+
+    .track-info-color {
+        width: 15px;
+    }
+
+    .track-info-content {
+        margin-left: 5px;
+        padding: 5px;
+    }
+</style>track
