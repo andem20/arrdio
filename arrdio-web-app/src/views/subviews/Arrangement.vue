@@ -8,44 +8,40 @@ const timesignature = 4;
 const barsWidth = 30;
 const bars = 200;
 const trackWidth = bars * timesignature * barsWidth;
+let scrollTopBound = 0;
 
 onMounted(() => {
-  const timeline = document.querySelector<HTMLElement>("#timeline");
   const tracksContainer = document.querySelector<HTMLElement>(".tracks-container");
-  const timelineBackground = document.querySelector<HTMLElement>(".timeline-background");
   const tracksGrid = document.querySelector<HTMLElement>(".timeline-background");
+  const timeline = document.querySelector<HTMLElement>(".timeline");
   
-  if (tracksContainer && timeline && timelineBackground && tracksGrid) {
-    const scrollBound = timeline.scrollWidth - timeline.clientWidth;
-
-    tracksContainer.addEventListener("scroll", (e: Event) => {
-      const element = e.target as HTMLElement;
-      timeline.scrollLeft = Math.min(element.scrollLeft, scrollBound);
-      timelineBackground.scrollLeft = timeline.scrollLeft;
-      tracksContainer.scrollLeft = timeline.scrollLeft;
-      tracksGrid.style.top = tracksContainer.scrollTop + "px";
-    })
-
-    timeline.addEventListener("scroll", (e) => {
-      const element = e.target as HTMLElement;
-      timeline.scrollLeft = Math.min(element.scrollLeft, scrollBound);
-      tracksContainer.scrollLeft = timeline.scrollLeft;
+  if (tracksContainer && tracksGrid && timeline) {
+    scrollTopBound = tracksContainer.scrollHeight - tracksGrid.offsetHeight;
+    timeline.style.width = tracksContainer.scrollWidth + "px";
+    
+    window.addEventListener("resize", (e: Event) => {
+      scrollTopBound = tracksContainer.scrollHeight - tracksGrid.offsetHeight;
+      timeline.style.width = tracksContainer.scrollWidth + "px";
     });
+    
+    tracksContainer.addEventListener("scroll", (e: Event) => {
+      tracksGrid.style.top = Math.min(scrollTopBound, tracksContainer.scrollTop) + 40 + "px";
+    })
   }
 });
 </script>
 
 <template>
   <div class="row-component arrangement">
-    <div class="timeline" id="timeline">
-      <div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"
-        :style="`margin-top: ${item % timesignature == 0 ? 0 : heightOffset}px; height: ${item % timesignature == 0 ? '100%' : 'calc(100% - ' + heightOffset + 'px)'}; width: ${barsWidth - 1}px`">
-        {{ item % timesignature ? "" : (item / timesignature) + 1 }}
-      </div>
-    </div>
     <div class="tracks-container">
+      <div class="timeline">
+        <div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"
+          :style="`margin-top: ${item % timesignature == 0 ? 0 : heightOffset}px; height: ${item % timesignature == 0 ? '100%' : 'calc(100% - ' + heightOffset + 'px)'}; width: ${barsWidth - 1}px`">
+          {{ item % timesignature ? "" : (item / timesignature) + 1 }}
+        </div>
+      </div>
       <Track 
-      v-for="item in Array(15).keys()" 
+      v-for="item in Array(20).keys()" 
       name="Drums" 
       :number="item" 
       :color="`#${COLORS[item].hex}`" 
@@ -63,8 +59,7 @@ onMounted(() => {
 <style scoped>
 .arrangement {
   background-color: #4A5756;
-  height: calc(100% - 50px);
-  /* overflow-x: auto; */
+  height: 100%;
   position: relative;
   z-index: 0;
 }
@@ -79,15 +74,12 @@ onMounted(() => {
 .timeline {
   display: flex;
   padding-left: 200px;
-  height: 50px;
-  /* overflow-x: auto; */
-  overflow-x: scroll;
+  height: 40px;
+  position: sticky;
+  top: 0;
   color: #ffffff;
-}
-
-.timeline::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+  z-index: 1000;
+  background-color: #4A5756;
 }
 
 .timeline-grid {
@@ -98,10 +90,10 @@ onMounted(() => {
 
 .timeline-background {
   display: flex;
-  height: 100%;
+  height: calc(100% - 40px);
   padding-left: 200px;
   position: absolute;
-  top: 0;
+  top: 40px;
   z-index: -1;
 }
 </style>

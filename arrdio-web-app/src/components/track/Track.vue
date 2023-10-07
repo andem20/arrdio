@@ -39,7 +39,7 @@ import TrackInfo from './TrackInfo.vue';
     .track {
         display: flex;
         margin-bottom: 2px;
-        z-index: 1000;
+        z-index: 100;
     }
 
     .drag-over {

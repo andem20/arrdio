@@ -13,6 +13,6 @@
         height: 100%;
         opacity: 0.7;
         flex-shrink: 0;
-        z-index: 900;
+        z-index: 90;
     }
 </style>
