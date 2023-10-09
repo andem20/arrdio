@@ -4,9 +4,10 @@ import { ref, onMounted } from 'vue'
 import { COLORS } from '../../constants/colors';
 
 const heightOffset = 30;
+const widthOffset = 200;
 const timesignature = 4;
 const barsWidth = 30;
-const bars = 200;
+const bars = 100;
 const trackWidth = bars * timesignature * barsWidth;
 let scrollTopBound = 0;
 
@@ -17,14 +18,15 @@ onMounted(() => {
   
   if (tracksContainer && tracksGrid && timeline) {
     scrollTopBound = tracksContainer.scrollHeight - tracksGrid.offsetHeight;
-    timeline.style.width = tracksContainer.scrollWidth + "px";
+    timeline.style.width = tracksContainer.scrollWidth - widthOffset + "px";
     
-    window.addEventListener("resize", (e: Event) => {
+    window.addEventListener("resize", () => {
       scrollTopBound = tracksContainer.scrollHeight - tracksGrid.offsetHeight;
       timeline.style.width = tracksContainer.scrollWidth + "px";
+      timeline.style.width = tracksContainer.scrollWidth - widthOffset + "px";
     });
     
-    tracksContainer.addEventListener("scroll", (e: Event) => {
+    tracksContainer.addEventListener("scroll", () => {
       tracksGrid.style.top = Math.min(scrollTopBound, tracksContainer.scrollTop) + 40 + "px";
     })
   }
@@ -43,7 +45,7 @@ onMounted(() => {
       <Track 
       v-for="item in Array(20).keys()" 
       name="Drums" 
-      :number="item" 
+      :id="item" 
       :color="`#${COLORS[item].hex}`" 
       :width="trackWidth"
       />

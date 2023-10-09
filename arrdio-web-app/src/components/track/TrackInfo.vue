@@ -1,7 +1,7 @@
 <script lang="ts" setup>
     defineProps({
         name: String,
-        number: Number,
+        id: Number,
         color: String
     })
 </script>
@@ -10,7 +10,7 @@
     <div class="track-info-container">
         <div class="track-info-color" :style="`background-color: ${color}`"></div>
         <div class="track-info-content">
-            {{ name + " " + number }}
+            {{ name + " " + id }}
         </div>
     </div>
 </template>

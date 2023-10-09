@@ -1,48 +1,67 @@
 <script lang="ts" setup>
-    import { ref } from 'vue';
+import { ref } from 'vue';
 import TrackInfo from './TrackInfo.vue';
-    import TrackLine from './TrackLine.vue';
+import TrackClip from './TrackClip.vue';
 
-    defineProps({
-        name: String,
-        number: Number,
-        color: String,
-        width: Number
-    })
+const fileReader = new FileReader();
 
-    const trackInfoWidth = 200;
-    const trackHeight = 100;
+defineProps({
+    name: String!,
+    id: Number!,
+    color: String!,
+    width: Number
+})
 
-    const isDragOver = ref(false)
+const trackInfoWidth = 200;
+const trackHeight = 100;
 
-    function upload() {
-        console.log("upload")
+const isDragOver = ref(false)
+
+const audioClipMap = ref(new Map<number, Uint8Array>());
+
+function upload(e: DragEvent) {
+    const file = e.dataTransfer?.files[0];
+
+    if (!file) {
+        console.error("No file present.");
+        return;
     }
+
+    if (!file!.type.includes("audio")) {
+        console.error("Not a valid audio file");
+        return;
+    }
+
+    fileReader.readAsArrayBuffer(file!);
+
+    fileReader.onloadend = () => {
+        const buffer = new Uint8Array(fileReader.result as ArrayBuffer);
+        const targetElement = e.target as HTMLElement;
+        const position = targetElement?.parentElement?.scrollLeft! + e.clientX;
+
+        audioClipMap.value.set(position, buffer);
+    }
+}
 </script>
 <template>
-    <div class="track" 
-        :style="`height: ${trackHeight}px; width: ${width}px;`"
-        @drop.prevent="
-            upload();
-            isDragOver = false;
-        "
-        @dragover.prevent="isDragOver = true"
-        @dragleave.prevent="isDragOver = false"
-        :class="{ 'drag-over': isDragOver }"
-    >
-        <TrackInfo :name="name" :number="number" :color="color"
+    <div class="track" :style="`height: ${trackHeight}px; width: ${width}px;`" @drop.prevent="
+        upload($event);
+    isDragOver = false;
+    " @dragover.prevent="isDragOver = true" @dragleave.prevent="isDragOver = false"
+        :class="{ 'drag-over': isDragOver }">
+        <TrackInfo :name="name" :id="id" :color="color"
             :style="`width: ${trackInfoWidth}px; height: ${trackHeight}px`" />
-        <!-- <TrackLine :color="color" /> -->
+        <TrackClip v-for="[position, audioClip] of audioClipMap" :audioClip="audioClip" :position="position" :color="color" />
     </div>
 </template>
 <style scoped>
-    .track {
-        display: flex;
-        margin-bottom: 2px;
-        z-index: 100;
-    }
+.track {
+    margin-bottom: 2px;
+    z-index: 100;
+    position: relative;
+}
 
-    .drag-over {
-        background-color: #ffffff33;
-    }
+.drag-over {
+    background-color: #ffffff33;
+}
 </style>
