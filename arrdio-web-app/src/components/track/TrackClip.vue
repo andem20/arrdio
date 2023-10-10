@@ -25,17 +25,12 @@ function drawChannel(buffer: AudioBuffer, ctx: CanvasRenderingContext2D, chunkSi
     ctx.beginPath();
 
     const data = buffer.getChannelData(channel);
-    ctx.moveTo(0, 50)
+    ctx.fillStyle = "#ffffff";
 
     for (let i = chunkSize; i <= data.length; i += chunkSize) {
         const value = data.slice(i - chunkSize, i).reduce((a, b) => a + b) / chunkSize;
-        ctx.lineTo(i / chunkSize - 1, 50 + (value * 500) * (channel == 0 ? 1 : -1));
+        ctx.fillRect(i / chunkSize - 1, 50, 1, (value * 500) * (channel == 0 ? 1 : -1));
     }
-
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.closePath();
 }
 
 </script>

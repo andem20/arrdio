@@ -48,7 +48,7 @@ onMounted(() => {
       v-for="item in Array(20).keys()" 
       name="Drums" 
       :id="item" 
-      :color="`#${COLORS[item].hex}`" 
+      :color="`#${COLORS[(item * 3) % COLORS.length].hex}`" 
       :width="trackWidth"
       />
       <div class="timeline-background">
