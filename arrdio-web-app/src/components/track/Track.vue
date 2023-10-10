@@ -17,7 +17,7 @@ const trackHeight = 100;
 
 const isDragOver = ref(false)
 
-const audioClipMap = ref(new Map<number, Uint8Array>());
+const audioClipMap = ref(new Map<number, AudioBuffer>());
 
 function upload(e: DragEvent) {
     const file = e.dataTransfer?.files[0];
@@ -34,8 +34,8 @@ function upload(e: DragEvent) {
 
     fileReader.readAsArrayBuffer(file!);
 
-    fileReader.onloadend = () => {
-        const buffer = new Uint8Array(fileReader.result as ArrayBuffer);
+    fileReader.onloadend = async () => {
+        const buffer = await new AudioContext().decodeAudioData(fileReader.result as ArrayBuffer);
         const targetElement = e.target as HTMLElement;
         const position = targetElement?.parentElement?.scrollLeft! + e.clientX;
 

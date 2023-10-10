@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import Track from '../../components/track/Track.vue';
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { COLORS } from '../../constants/colors';
+import { useSettingsStore } from '@/stores/settings';
+
+const { barsWidth } = useSettingsStore();
 
 const heightOffset = 30;
 const widthOffset = 200;
 const timesignature = 4;
-const barsWidth = 30;
 const bars = 100;
 const trackWidth = bars * timesignature * barsWidth;
 let scrollTopBound = 0;
@@ -98,4 +100,4 @@ onMounted(() => {
   top: 40px;
   z-index: -1;
 }
-</style>
+</style>@/stores/settings
