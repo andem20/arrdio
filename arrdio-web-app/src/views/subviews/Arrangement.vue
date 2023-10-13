@@ -4,13 +4,13 @@ import { onMounted } from 'vue'
 import { COLORS } from '../../constants/colors';
 import { useSettingsStore } from '@/stores/settings';
 
-const { barsWidth } = useSettingsStore();
+const { beatWidth, timeWidth } = useSettingsStore();
 
 const heightOffset = 30;
 const widthOffset = 200;
 const timesignature = 4;
 const bars = 100;
-const trackWidth = bars * timesignature * barsWidth;
+const trackWidth = bars * timesignature * beatWidth;
 let scrollTopBound = 0;
 
 onMounted(() => {
@@ -33,30 +33,72 @@ onMounted(() => {
     })
   }
 });
+
+//TODO move this
+let start: number | undefined, previousTimestamp: number | undefined;
+let done = false;
+let running = false;
+let activeAnimationFrame: number;
+
+function stepPlayback(timestamp: number) {
+  const playbackLine = document.querySelector<HTMLElement>(".playback-line-container");
+  if (start === undefined) {
+    start = timestamp;
+  }
+  const elapsed = timestamp - start!;
+
+  if (previousTimestamp !== timestamp) {
+    const count = Math.min(timeWidth * (elapsed / 1000), trackWidth);
+    playbackLine!.style.transform = `translateX(${count}px)`;
+    if (count === trackWidth) done = true;
+  }
+
+  previousTimestamp = timestamp;
+
+  if (!done && running) {
+    activeAnimationFrame = window.requestAnimationFrame(stepPlayback);
+  }
+}
+
+function startPlayback() {
+  if (!running) {
+    running = true;
+    activeAnimationFrame = window.requestAnimationFrame(stepPlayback);
+  } else {
+    start = undefined;
+    previousTimestamp = undefined;
+    running = false;
+    window.cancelAnimationFrame(activeAnimationFrame);
+  }
+}
 </script>
 
 <template>
-  <div class="row-component arrangement">
+  <div class="row-component arrangement" @click="startPlayback">
     <div class="tracks-container">
+      <div class="playback-line-container">
+        <div class="playback-line-edge"></div>
+        <div class="playback-line"></div>
+      </div>
       <div class="timeline">
         <div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"
-          :style="`margin-top: ${item % timesignature == 0 ? 0 : heightOffset}px; height: ${item % timesignature == 0 ? '100%' : 'calc(100% - ' + heightOffset + 'px)'}; width: ${barsWidth - 1}px`">
-          {{ item % timesignature ? "" : (item / timesignature) + 1 }}
-        </div>
-      </div>
-      <Track 
-      v-for="item in Array(20).keys()" 
-      name="Drums" 
-      :id="item" 
-      :color="`#${COLORS[(item * 3) % COLORS.length].hex}`" 
-      :width="trackWidth"
-      />
-      <div class="timeline-background">
-        <div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"
-        :style="`height: 100%; width: ${barsWidth - 1}px`">
-        </div>
+        :style="`margin-top: ${item % timesignature == 0 ? 0 : heightOffset}px; height: ${item % timesignature == 0 ? '100%' : 'calc(100% - ' + heightOffset + 'px)'}; width: ${beatWidth - 1}px`">
+        {{ item % timesignature ? "" : (item / timesignature) + 1 }}
       </div>
     </div>
+    <Track 
+    v-for="item in Array(20).keys()" 
+    name="Drums" 
+    :id="item" 
+    :color="`#${COLORS[(item * 3) % COLORS.length].hex}`" 
+    :width="trackWidth"
+    />
+    <div class="timeline-background">
+      <div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"
+      :style="`height: 100%; width: ${beatWidth - 1}px`">
+    </div>
+  </div>
+</div>
   </div>
 </template>
 
@@ -82,7 +124,7 @@ onMounted(() => {
   position: sticky;
   top: 0;
   color: #ffffff;
-  z-index: 1000;
+  z-index: 100;
   background-color: #4A5756;
 }
 
@@ -100,4 +142,29 @@ onMounted(() => {
   top: 40px;
   z-index: -1;
 }
-</style>@/stores/settings
+
+.playback-line-container {
+  position: absolute;
+  z-index: 150;
+  width: 10px;
+  height: 100%;
+  left: 195px;
+  top: 30px;
+}
+
+.playback-line {
+  background-color: #00000055;
+  height: 100%;
+  width: 2px;
+  display: block;
+  margin-left: calc(50% - 1px);
+}
+
+.playback-line-edge {
+  background-color: #00000055;
+  height: 2px;
+  width: 100%;
+  display: block;
+}
+
+</style>

@@ -21,7 +21,7 @@
         left: 0;
         background-color: #404D4Cee;
         color: #ffffff;
-        z-index: 100;
+        z-index: 200;
         flex-shrink: 0;
         display: flex;
     }

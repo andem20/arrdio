@@ -60,7 +60,6 @@ function upload(e: DragEvent) {
 <style scoped>
 .track {
     margin-bottom: 2px;
-    z-index: 100;
     position: relative;
 }
 

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import ControlsBar from './subviews/ControlsBar.vue';
+import Header from './subviews/Header.vue';
 import Arrangement from './subviews/Arrangement.vue';
 </script>
 
 <template>
   <main class="main-container">
-    <ControlsBar />
+    <Header />
     <Arrangement />
   </main>
 </template>

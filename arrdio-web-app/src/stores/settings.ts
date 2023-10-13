@@ -4,8 +4,8 @@ import { defineStore } from 'pinia'
 export const useSettingsStore = defineStore('settings', () => {
   const bpm = ref(120);
   const timeWidth = ref(60); // width of a second
-  const barsWidth = computed(() => timeWidth.value / (bpm.value / 60));
+  const beatWidth = computed(() => timeWidth.value / (bpm.value / 60));
   const audioCtx = new AudioContext();
 
-  return { bpm, timeWidth, barsWidth, audioCtx }
+  return { bpm, timeWidth, beatWidth, audioCtx }
 })

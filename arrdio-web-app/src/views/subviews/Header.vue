@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Controls from './Controls.vue';
+
 
 </script>
 
@@ -8,6 +10,7 @@
     <div class="title">
       ARRDIO
     </div>
+    <Controls class="controls" />
   </div>
 </template>
 
@@ -28,5 +31,12 @@
     font-size: 3em;
     margin-left: 20px;
     font-weight: 100;
+  }
+
+  .controls {
+    float: right;
+    width: 100%;
+    display:  flex;
+    justify-content: center;
   }
 </style>
