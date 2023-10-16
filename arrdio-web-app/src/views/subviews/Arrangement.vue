@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Track from '../../components/track/Track.vue';
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { COLORS } from '../../constants/colors';
 import { useSettingsStore } from '@/stores/settings';
 import { useAudioStore } from '@/stores/audio';
@@ -15,25 +15,25 @@ const bars = 100;
 const trackWidth = bars * timesignature * beatWidth;
 let scrollTopBound = 0;
 
+const playbackLine = ref<HTMLElement | null>(null);
+const tracksContainer = ref<HTMLElement | null>(null);
+const timelineBg = ref<HTMLElement | null>(null);
+const timeline = ref<HTMLElement | null>(null);
+
 onMounted(() => {
-  const tracksContainer = document.querySelector<HTMLElement>(".tracks-container");
-  const tracksGrid = document.querySelector<HTMLElement>(".timeline-background");
-  const timeline = document.querySelector<HTMLElement>(".timeline");
+  scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
+  timeline.value!.style.width = tracksContainer.value!.scrollWidth - widthOffset + "px";
   
-  if (tracksContainer && tracksGrid && timeline) {
-    scrollTopBound = tracksContainer.scrollHeight - tracksGrid.offsetHeight;
-    timeline.style.width = tracksContainer.scrollWidth - widthOffset + "px";
-    
-    window.addEventListener("resize", () => {
-      scrollTopBound = tracksContainer.scrollHeight - tracksGrid.offsetHeight;
-      timeline.style.width = tracksContainer.scrollWidth + "px";
-      timeline.style.width = tracksContainer.scrollWidth - widthOffset + "px";
-    });
-    
-    tracksContainer.addEventListener("scroll", () => {
-      tracksGrid.style.top = Math.min(scrollTopBound, tracksContainer.scrollTop) + 40 + "px";
-    })
-  }
+  window.addEventListener("resize", () => {
+    scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
+    timeline.value!.style.width = tracksContainer.value!.scrollWidth + "px";
+    timeline.value!.style.width = tracksContainer.value!.scrollWidth - widthOffset + "px";
+  });
+  
+  tracksContainer.value!.addEventListener("scroll", () => {
+    timelineBg.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 40 + "px";
+    playbackLine.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 30 + "px";
+  })
 });
 
 //TODO move this
@@ -43,7 +43,6 @@ let running = false;
 let activeAnimationFrame: number;
 
 function stepPlayback(timestamp: number) {
-  const playbackLine = document.querySelector<HTMLElement>(".playback-line-container");
   if (start === undefined) {
     start = timestamp;
   }
@@ -51,7 +50,7 @@ function stepPlayback(timestamp: number) {
 
   if (previousTimestamp !== timestamp) {
     const count = Math.min(timeWidth * (elapsed / 1000), trackWidth);
-    playbackLine!.style.transform = `translateX(${count}px)`;
+    playbackLine.value!.style.transform = `translateX(${count}px)`;
     if (count === trackWidth) done = true;
   }
 
@@ -87,12 +86,12 @@ window.addEventListener("keypress", (e: KeyboardEvent) => {
 
 <template>
   <div class="row-component arrangement">
-    <div class="tracks-container">
-      <div class="playback-line-container">
+    <div class="tracks-container" ref="tracksContainer">
+      <div class="playback-line-container" ref="playbackLine">
         <div class="playback-line-edge"></div>
         <div class="playback-line"></div>
       </div>
-      <div class="timeline">
+      <div class="timeline" ref="timeline">
         <div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"
         :style="`margin-top: ${item % timesignature == 0 ? 0 : heightOffset}px; height: ${item % timesignature == 0 ? '100%' : 'calc(100% - ' + heightOffset + 'px)'}; width: ${beatWidth - 1}px`">
         {{ item % timesignature ? "" : (item / timesignature) + 1 }}
@@ -105,7 +104,7 @@ window.addEventListener("keypress", (e: KeyboardEvent) => {
     :color="`#${COLORS[(item * 3) % COLORS.length].hex}`" 
     :width="trackWidth"
     />
-    <div class="timeline-background">
+    <div class="timeline-background" ref="timelineBg">
       <div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"
       :style="`height: 100%; width: ${beatWidth - 1}px`">
     </div>
@@ -159,7 +158,7 @@ window.addEventListener("keypress", (e: KeyboardEvent) => {
   position: absolute;
   z-index: 150;
   width: 10px;
-  height: 100%;
+  height: calc(100% - 32px);
   left: 195px;
   top: 30px;
 }
