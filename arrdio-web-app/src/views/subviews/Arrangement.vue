@@ -3,8 +3,10 @@ import Track from '../../components/track/Track.vue';
 import { onMounted } from 'vue'
 import { COLORS } from '../../constants/colors';
 import { useSettingsStore } from '@/stores/settings';
+import { useAudioStore } from '@/stores/audio';
 
 const { beatWidth, timeWidth } = useSettingsStore();
+const { audioClips, audioManager } = useAudioStore();
 
 const heightOffset = 30;
 const widthOffset = 200;
@@ -63,18 +65,28 @@ function stepPlayback(timestamp: number) {
 function startPlayback() {
   if (!running) {
     running = true;
+    audioManager.play();
     activeAnimationFrame = window.requestAnimationFrame(stepPlayback);
   } else {
     start = undefined;
     previousTimestamp = undefined;
     running = false;
+    audioManager.stop();
     window.cancelAnimationFrame(activeAnimationFrame);
   }
 }
+
+window.addEventListener("keypress", (e: KeyboardEvent) => {
+  e.preventDefault();
+  
+  if (e.code === "Space") {
+    startPlayback();
+  }
+});
 </script>
 
 <template>
-  <div class="row-component arrangement" @click="startPlayback">
+  <div class="row-component arrangement">
     <div class="tracks-container">
       <div class="playback-line-container">
         <div class="playback-line-edge"></div>

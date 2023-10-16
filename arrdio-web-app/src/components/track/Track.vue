@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import TrackInfo from './TrackInfo.vue';
 import TrackClip from './TrackClip.vue';
 import { useSettingsStore } from '@/stores/settings';
+import { useAudioStore } from '@/stores/audio';
 
 const fileReader = new FileReader();
 
@@ -13,7 +14,8 @@ defineProps({
     width: Number
 })
 
-const {audioCtx } = useSettingsStore();
+const { timeWidth } = useSettingsStore();
+const { audioClips, audioManager } = useAudioStore();
 
 const trackInfoWidth = 200;
 const trackHeight = 100;
@@ -38,11 +40,17 @@ function upload(e: DragEvent) {
     fileReader.readAsArrayBuffer(file!);
 
     fileReader.onloadend = async () => {
-        const buffer = await audioCtx.decodeAudioData(fileReader.result as ArrayBuffer);
+        const buffer = await audioManager.audioCtx.decodeAudioData(fileReader.result as ArrayBuffer);
         const targetElement = e.target as HTMLElement;
-        const position = targetElement?.parentElement?.scrollLeft! + e.clientX;
+        const position = Math.max(targetElement?.parentElement?.scrollLeft! + e.clientX, 200);
         
         audioClipMap.value.set(position, buffer);
+
+        audioClips.push({
+            audioBuffer: buffer,
+            delay: (position - 200) / timeWidth
+        });
+
     }
 }
 </script>

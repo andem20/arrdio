@@ -14,11 +14,15 @@ const trackWidth = audioClip!.duration * timeWidth;
 const canvas = ref<InstanceType<typeof HTMLCanvasElement> | null>(null);
 
 onMounted(() => {
-    const ctx = canvas.value?.getContext("2d");
-    const chunkSize = audioClip?.sampleRate! / timeWidth;
+    if (audioClip == undefined) return;
 
-    drawChannel(audioClip!, ctx!, chunkSize, 0);
-    drawChannel(audioClip!, ctx!, chunkSize, 1);
+    const ctx = canvas.value?.getContext("2d");
+    const chunkSize = audioClip.sampleRate! / timeWidth;
+
+    for (let i = 0; i < audioClip.numberOfChannels; i++) {
+        drawChannel(audioClip!, ctx!, chunkSize, 0);
+    }
+
 })
 
 function drawChannel(buffer: AudioBuffer, ctx: CanvasRenderingContext2D, chunkSize: number, channel: number) {
