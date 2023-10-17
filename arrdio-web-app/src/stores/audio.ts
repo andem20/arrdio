@@ -2,7 +2,9 @@ import { defineStore } from 'pinia'
 
 interface AudioClip {
     audioBuffer: AudioBuffer,
-    delay: number
+    delay: number,
+    track: number | undefined,
+    position: number
 }
 
 interface AudioManager {

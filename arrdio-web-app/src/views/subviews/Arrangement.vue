@@ -6,7 +6,7 @@ import { useSettingsStore } from '@/stores/settings';
 import { useAudioStore } from '@/stores/audio';
 
 const { beatWidth, timeWidth } = useSettingsStore();
-const { audioClips, audioManager } = useAudioStore();
+const { audioManager } = useAudioStore();
 
 const heightOffset = 30;
 const widthOffset = 200;
