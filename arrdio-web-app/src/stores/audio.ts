@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-interface AudioClip {
+export interface AudioClip {
     audioBuffer: AudioBuffer,
     delay: number,
     track: number | undefined,

@@ -1,24 +1,25 @@
 <script setup lang="ts">
 import Track from '../../components/track/Track.vue';
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { COLORS } from '../../constants/colors';
 import { useSettingsStore } from '@/stores/settings';
 import { useAudioStore } from '@/stores/audio';
+import { storeToRefs } from 'pinia';
 
-const { beatWidth, timeWidth } = useSettingsStore();
+const { beatWidth, timeWidth, trackWidth, zoomFactor } = storeToRefs(useSettingsStore());
+const { timesignature, bars } = useSettingsStore();
 const { audioManager } = useAudioStore();
 
 const heightOffset = 30;
 const widthOffset = 200;
-const timesignature = 4;
-const bars = 100;
-const trackWidth = bars * timesignature * beatWidth;
+
 let scrollTopBound = 0;
 
 const playbackLine = ref<HTMLElement | null>(null);
 const tracksContainer = ref<HTMLElement | null>(null);
 const timelineBg = ref<HTMLElement | null>(null);
 const timeline = ref<HTMLElement | null>(null);
+let playbackPosition = 0;
 
 onMounted(() => {
   scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
@@ -34,6 +35,10 @@ onMounted(() => {
     timelineBg.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 40 + "px";
     playbackLine.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 30 + "px";
   })
+
+  watch(zoomFactor, () => {
+    playbackLine.value!.style.transform = `translateX(${playbackPosition / zoomFactor.value}px)`;
+  });
 });
 
 //TODO move this
@@ -49,9 +54,10 @@ function stepPlayback(timestamp: number) {
   const elapsed = timestamp - start!;
 
   if (previousTimestamp !== timestamp) {
-    const count = Math.min(timeWidth * (elapsed / 1000), trackWidth);
+    const count = Math.min(timeWidth.value * (elapsed / 1000), trackWidth.value);
+    playbackPosition = count * zoomFactor.value;
     playbackLine.value!.style.transform = `translateX(${count}px)`;
-    if (count === trackWidth) done = true;
+    if (count === trackWidth.value) done = true;
   }
 
   previousTimestamp = timestamp;
@@ -63,16 +69,16 @@ function stepPlayback(timestamp: number) {
 
 function startPlayback() {
   if (!running) {
-    running = true;
     audioManager.play();
     activeAnimationFrame = window.requestAnimationFrame(stepPlayback);
   } else {
     start = undefined;
     previousTimestamp = undefined;
-    running = false;
     audioManager.stop();
     window.cancelAnimationFrame(activeAnimationFrame);
   }
+
+  running = !running;
 }
 
 window.addEventListener("keypress", (e: KeyboardEvent) => {
@@ -98,11 +104,10 @@ window.addEventListener("keypress", (e: KeyboardEvent) => {
       </div>
     </div>
     <Track 
-    v-for="item in Array(20).keys()" 
-    name="Drums" 
-    :id="item" 
-    :color="`#${COLORS[(item * 3) % COLORS.length].hex}`" 
-    :width="trackWidth"
+      v-for="item in Array(20).keys()" 
+      name="Drums" 
+      :id="item" 
+      :color="`#${COLORS[(item * 3) % COLORS.length].hex}`" 
     />
     <div class="timeline-background" ref="timelineBg">
       <div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"

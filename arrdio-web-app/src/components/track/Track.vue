@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import TrackInfo from './TrackInfo.vue';
 import TrackClip from './TrackClip.vue';
 import { useSettingsStore } from '@/stores/settings';
 import { useAudioStore } from '@/stores/audio';
+import { storeToRefs } from 'pinia';
 
 const fileReader = new FileReader();
 
@@ -11,10 +12,10 @@ const { id } = defineProps({
     name: String!,
     id: Number!,
     color: String!,
-    width: Number
 })
 
-const { timeWidth, isSnapToGrid, beatWidth } = useSettingsStore();
+const { timeWidth, beatWidth, trackWidth, zoomFactor } = storeToRefs(useSettingsStore());
+const { isSnapToGrid } = useSettingsStore();
 const { audioClips, audioManager } = useAudioStore();
 
 const trackInfoWidth = 200;
@@ -47,9 +48,9 @@ function upload(e: DragEvent) {
 
         audioClips.push({
             audioBuffer: buffer,
-            delay: (position - trackInfoWidth) / timeWidth,
+            delay: (position - trackInfoWidth) / timeWidth.value,
             track: id!,
-            position
+            position: (position - trackInfoWidth) * zoomFactor.value
         });
     }
 }
@@ -59,7 +60,7 @@ function calcPosition(e: DragEvent) {
     let position = Math.max(targetElement?.parentElement?.scrollLeft! + e.clientX, trackInfoWidth);
 
     if (isSnapToGrid) {
-        const subBeatWidth = beatWidth / 2;
+        const subBeatWidth = beatWidth.value / 2;
         position = trackInfoWidth + (subBeatWidth * Math.round((position - trackInfoWidth) / subBeatWidth));
     }
 
@@ -79,16 +80,15 @@ function handleDragLeave() {
 </script>
 <template>
     <div class="drop-track" ref="drop-track"
-        :style="`height: ${trackHeight}px; width: ${width}px; display: ${true ? 'block' : 'none'}`" @drop.prevent="
+        :style="`height: ${trackHeight}px; width: ${trackWidth}px; display: ${true ? 'block' : 'none'}`" @drop.prevent="
             upload($event);
         isDragOver = false;
         " @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave">
     </div>
     <div class="placeholder-clip" ref="placeholderClip"></div>
-    <div class="track" :style="`height: ${trackHeight}px; width: ${width}px;`" ref="track">
+    <div class="track" :style="`height: ${trackHeight}px; width: ${trackWidth}px;`" ref="track">
         <TrackInfo :name="name" :id="id" :color="color" :style="`width: ${trackInfoWidth}px; height: ${trackHeight}px`" />
-        <TrackClip v-for="audioClip of audioClips.filter(clip => clip.track === id)" :audioClip="audioClip.audioBuffer"
-            :position="audioClip.position" :color="color" />
+        <TrackClip v-for="audioClip of audioClips.filter(clip => clip.track === id)" :audioClip="audioClip" :color="color" />
     </div>
 </template>
 <style scoped>
@@ -105,7 +105,7 @@ function handleDragLeave() {
 
 .placeholder-clip {
     position: absolute;
-    width: 100px;
+    width: 20px;
     height: 100px;
     background-color: #ffffff33;
     display: none;
