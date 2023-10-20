@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import Track from '../../components/track/Track.vue';
-import { computed, onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { COLORS } from '../../constants/colors';
 import { useSettingsStore } from '@/stores/settings';
 import { useAudioStore } from '@/stores/audio';
 import { storeToRefs } from 'pinia';
 
-const { beatWidth, timeWidth, trackWidth, zoomFactor } = storeToRefs(useSettingsStore());
-const { timesignature, bars } = useSettingsStore();
+const { beatWidth, timeWidth, trackWidth, zoomAmount, zoomFactor } = storeToRefs(useSettingsStore());
+const { timesignature, bars, keysPressed } = useSettingsStore();
 const { audioManager } = useAudioStore();
 
 const heightOffset = 30;
@@ -31,10 +31,17 @@ onMounted(() => {
     timeline.value!.style.width = tracksContainer.value!.scrollWidth - widthOffset + "px";
   });
   
-  tracksContainer.value!.addEventListener("scroll", () => {
+  tracksContainer.value!.addEventListener("scroll", (e: Event) => {
     timelineBg.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 40 + "px";
     playbackLine.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 30 + "px";
-  })
+  });
+
+  tracksContainer.value?.addEventListener("wheel", (e: WheelEvent) => {
+    if (keysPressed.has("ControlLeft" || "ControlRight")) {
+      e.preventDefault();
+      zoomAmount.value += e.deltaY * 0.1
+    }
+  });
 
   watch(zoomFactor, () => {
     playbackLine.value!.style.transform = `translateX(${playbackPosition / zoomFactor.value}px)`;
@@ -81,13 +88,17 @@ function startPlayback() {
   running = !running;
 }
 
-window.addEventListener("keypress", (e: KeyboardEvent) => {
+window.addEventListener("keydown", (e: KeyboardEvent) => {
   e.preventDefault();
   
+  keysPressed.add(e.code);
+
   if (e.code === "Space") {
     startPlayback();
   }
 });
+
+window.addEventListener("keyup", (e: KeyboardEvent) => keysPressed.delete(e.code));
 </script>
 
 <template>

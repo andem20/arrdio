@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import TrackInfo from './TrackInfo.vue';
 import TrackClip from './TrackClip.vue';
 import { useSettingsStore } from '@/stores/settings';
