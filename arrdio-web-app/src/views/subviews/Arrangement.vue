@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Track from '../../components/track/Track.vue';
-import { onMounted, ref, watch } from 'vue'
-import { COLORS } from '../../constants/colors';
+import Track from '@/components/track/Track.vue';
+import { computed, onMounted, ref, watch } from 'vue'
+import { COLORS } from '@/constants/colors';
 import { useSettingsStore } from '@/stores/settings';
 import { useAudioStore } from '@/stores/audio';
 import { storeToRefs } from 'pinia';
@@ -22,176 +22,182 @@ const timeline = ref<HTMLElement | null>(null);
 let playbackPosition = 0;
 
 onMounted(() => {
-  scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
-  timeline.value!.style.width = tracksContainer.value!.scrollWidth - widthOffset + "px";
-  
-  window.addEventListener("resize", () => {
-    scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
-    timeline.value!.style.width = tracksContainer.value!.scrollWidth + "px";
-    timeline.value!.style.width = tracksContainer.value!.scrollWidth - widthOffset + "px";
-  });
-  
-  tracksContainer.value!.addEventListener("scroll", (e: Event) => {
-    timelineBg.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 40 + "px";
-    playbackLine.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 30 + "px";
-  });
+	scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
+	timeline.value!.style.width = tracksContainer.value!.scrollWidth - widthOffset + "px";
 
-  tracksContainer.value?.addEventListener("wheel", (e: WheelEvent) => {
-    if (keysPressed.has("ControlLeft" || "ControlRight")) {
-      e.preventDefault();
-      zoomAmount.value += e.deltaY * 0.1
-    }
-  });
+	window.addEventListener("resize", () => {
+		scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
+		timeline.value!.style.width = tracksContainer.value!.scrollWidth + "px";
+		timeline.value!.style.width = tracksContainer.value!.scrollWidth - widthOffset + "px";
+	});
 
-  watch(zoomFactor, () => {
-    playbackLine.value!.style.transform = `translateX(${playbackPosition / zoomFactor.value}px)`;
-  });
+	tracksContainer.value!.addEventListener("scroll", (e: Event) => {
+		timelineBg.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 40 + "px";
+		playbackLine.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 30 + "px";
+	});
+
+	tracksContainer.value?.addEventListener("wheel", (e: WheelEvent) => {
+		if (keysPressed.has("ControlLeft" || "ControlRight")) {
+			e.preventDefault();
+			zoomAmount.value += e.deltaY * 0.1
+		}
+	});
+
+	timeline.value?.addEventListener("click", movePlaybackLine);
+	tracksContainer.value?.addEventListener("click", movePlaybackLine);
+
+	watch(zoomFactor, () => {
+		playbackLine.value!.style.left = playbackLineOffset + (startPosition + playbackPosition) / zoomFactor.value + "px";
+	});
 });
+
+function movePlaybackLine(e: MouseEvent) {
+	startPosition = (tracksContainer.value!.scrollLeft + e.clientX - playbackLineOffset) * zoomFactor.value;
+	playbackLine.value!.style.left = playbackLineOffset + startPosition / zoomFactor.value + "px";
+	playbackPosition = 0;
+}
 
 //TODO move this
 let start: number | undefined, previousTimestamp: number | undefined;
 let done = false;
 let running = false;
 let activeAnimationFrame: number;
+const playbackLineOffset = 195;
+let startPosition = 0;
 
 function stepPlayback(timestamp: number) {
-  if (start === undefined) {
-    start = timestamp;
-  }
-  const elapsed = timestamp - start!;
+	if (start === undefined) {
+		start = timestamp;
+	}
+	const elapsed = timestamp - start!;
 
-  if (previousTimestamp !== timestamp) {
-    const count = Math.min(timeWidth.value * (elapsed / 1000), trackWidth.value);
-    playbackPosition = count * zoomFactor.value;
-    playbackLine.value!.style.transform = `translateX(${count}px)`;
-    if (count === trackWidth.value) done = true;
-  }
+	if (previousTimestamp !== timestamp) {
+		const count = Math.min(timeWidth.value * (elapsed / 1000), trackWidth.value);
+		playbackPosition = count * zoomFactor.value;
+		playbackLine.value!.style.left = playbackLineOffset + (startPosition + playbackPosition) / zoomFactor.value + "px";
+		if (count === trackWidth.value) done = true;
+	}
 
-  previousTimestamp = timestamp;
+	previousTimestamp = timestamp;
 
-  if (!done && running) {
-    activeAnimationFrame = window.requestAnimationFrame(stepPlayback);
-  }
+	if (!done && running) {
+		activeAnimationFrame = window.requestAnimationFrame(stepPlayback);
+	}
 }
 
 function startPlayback() {
-  if (!running) {
-    audioManager.play();
-    activeAnimationFrame = window.requestAnimationFrame(stepPlayback);
-  } else {
-    start = undefined;
-    previousTimestamp = undefined;
-    audioManager.stop();
-    window.cancelAnimationFrame(activeAnimationFrame);
-  }
+	if (!running) {
+		audioManager.play();
+		activeAnimationFrame = window.requestAnimationFrame(stepPlayback);
+	} else {
+		start = undefined;
+		previousTimestamp = undefined;
+		audioManager.stop();
+		window.cancelAnimationFrame(activeAnimationFrame);
+	}
 
-  running = !running;
+	running = !running;
 }
 
 window.addEventListener("keydown", (e: KeyboardEvent) => {
-  e.preventDefault();
-  
-  keysPressed.add(e.code);
+	e.preventDefault();
 
-  if (e.code === "Space") {
-    startPlayback();
-  }
+	keysPressed.add(e.code);
+
+	if (e.code === "Space") {
+		startPlayback();
+	}
 });
 
 window.addEventListener("keyup", (e: KeyboardEvent) => keysPressed.delete(e.code));
 </script>
 
 <template>
-  <div class="row-component arrangement">
-    <div class="tracks-container" ref="tracksContainer">
-      <div class="playback-line-container" ref="playbackLine">
-        <div class="playback-line-edge"></div>
-        <div class="playback-line"></div>
-      </div>
-      <div class="timeline" ref="timeline">
-        <div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"
-        :style="`margin-top: ${item % timesignature == 0 ? 0 : heightOffset}px; height: ${item % timesignature == 0 ? '100%' : 'calc(100% - ' + heightOffset + 'px)'}; width: ${beatWidth - 1}px`">
-        {{ item % timesignature ? "" : (item / timesignature) + 1 }}
-      </div>
-    </div>
-    <Track 
-      v-for="item in Array(20).keys()" 
-      name="Drums" 
-      :id="item" 
-      :color="`#${COLORS[(item * 3) % COLORS.length].hex}`" 
-    />
-    <div class="timeline-background" ref="timelineBg">
-      <div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"
-      :style="`height: 100%; width: ${beatWidth - 1}px`">
-    </div>
-  </div>
-</div>
-  </div>
+	<div class="row-component arrangement">
+		<div class="tracks-container" ref="tracksContainer">
+			<div class="playback-line-container" ref="playbackLine">
+				<div class="playback-line-edge"></div>
+				<div class="playback-line"></div>
+			</div>
+			<div class="timeline" ref="timeline">
+				<div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"
+					:style="`margin-top: ${item % timesignature == 0 ? 0 : heightOffset}px; height: ${item % timesignature == 0 ? '100%' : 'calc(100% - ' + heightOffset + 'px)'}; width: ${beatWidth - 1}px`">
+					{{ item % timesignature ? "" : (item / timesignature) + 1 }}
+				</div>
+			</div>
+			<Track v-for="item in Array(20).keys()" name="Drums" :id="item"
+				:color="`#${COLORS[(item * 3) % COLORS.length].hex}`" />
+			<div class="timeline-background" ref="timelineBg">
+				<div class="timeline-grid" v-for="item in Array(bars * timesignature).keys()"
+					:style="`height: 100%; width: ${beatWidth - 1}px`">
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
 
 <style scoped>
 .arrangement {
-  background-color: #4A5756;
-  height: 100%;
-  position: relative;
-  z-index: 0;
+	background-color: #4A5756;
+	height: 100%;
+	position: relative;
+	z-index: 0;
 }
 
 .tracks-container {
-  overflow: auto;
-  height: calc(100% - 100px);
-  background-size: 51px;
-  position: relative;
+	overflow: auto;
+	height: calc(100% - 100px);
+	background-size: 51px;
+	position: relative;
 }
 
 .timeline {
-  display: flex;
-  padding-left: 200px;
-  height: 40px;
-  position: sticky;
-  top: 0;
-  color: #ffffff;
-  z-index: 100;
-  background-color: #4A5756;
+	display: flex;
+	padding-left: 200px;
+	height: 40px;
+	position: sticky;
+	top: 0;
+	color: #ffffff;
+	z-index: 100;
+	background-color: #4A5756;
 }
 
 .timeline-grid {
-  border-left: 1px solid #ffffff22;
-  flex-shrink: 0;
-  z-index: 1;
+	border-left: 1px solid #ffffff22;
+	flex-shrink: 0;
+	z-index: 1;
 }
 
 .timeline-background {
-  display: flex;
-  height: calc(100% - 40px);
-  padding-left: 200px;
-  position: absolute;
-  top: 40px;
-  z-index: -1;
+	display: flex;
+	height: calc(100% - 40px);
+	padding-left: 200px;
+	position: absolute;
+	top: 40px;
+	z-index: -1;
 }
 
 .playback-line-container {
-  position: absolute;
-  z-index: 150;
-  width: 10px;
-  height: calc(100% - 32px);
-  left: 195px;
-  top: 30px;
+	position: absolute;
+	z-index: 150;
+	width: 10px;
+	height: calc(100% - 32px);
+	left: 195px;
+	top: 30px;
 }
 
 .playback-line {
-  background-color: #00000055;
-  height: 100%;
-  width: 2px;
-  display: block;
-  margin-left: calc(50% - 1px);
+	background-color: #00000055;
+	height: 100%;
+	width: 2px;
+	display: block;
+	margin-left: calc(50% - 1px);
 }
 
 .playback-line-edge {
-  background-color: #00000055;
-  height: 2px;
-  width: 100%;
-  display: block;
+	background-color: #00000055;
+	height: 2px;
+	width: 100%;
+	display: block;
 }
-
 </style>

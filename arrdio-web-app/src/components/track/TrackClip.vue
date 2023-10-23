@@ -2,7 +2,7 @@
 import { useSettingsStore } from '@/stores/settings';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, ref, watch, type PropType } from 'vue';
-import type { AudioClip } from "../../stores/audio";
+import type { AudioClip } from "@/stores/audio";
 
 const { audioClip } = defineProps({
     audioClip: Object! as PropType<AudioClip>,
