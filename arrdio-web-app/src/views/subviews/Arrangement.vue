@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Track from '@/components/track/Track.vue';
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { COLORS } from '@/constants/colors';
 import { useSettingsStore } from '@/stores/settings';
 import { useAudioStore } from '@/stores/audio';
@@ -36,10 +36,11 @@ onMounted(() => {
 		playbackLine.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 30 + "px";
 	});
 
-	tracksContainer.value?.addEventListener("wheel", (e: WheelEvent) => {
+	tracksContainer.value?.addEventListener("wheel", async (e: WheelEvent) => {
 		if (keysPressed.has("ControlLeft" || "ControlRight")) {
 			e.preventDefault();
-			zoomAmount.value += e.deltaY * 0.1
+			zoomAmount.value += e.deltaY * 0.1;
+			tracksContainer.value!.scrollLeft = startPosition / zoomFactor.value - tracksContainer.value!.clientWidth / 2;
 		}
 	});
 
@@ -58,7 +59,8 @@ function movePlaybackLine(e: MouseEvent) {
 }
 
 //TODO move this
-let start: number | undefined, previousTimestamp: number | undefined;
+let start: number | undefined;
+let previousTimestamp: number | undefined;
 let done = false;
 let running = false;
 let activeAnimationFrame: number;
