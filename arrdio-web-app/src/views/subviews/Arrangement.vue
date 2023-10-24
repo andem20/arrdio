@@ -9,6 +9,7 @@ import { storeToRefs } from 'pinia';
 const { beatWidth, timeWidth, trackWidth, zoomAmount, zoomFactor } = storeToRefs(useSettingsStore());
 const { timesignature, bars, keysPressed } = useSettingsStore();
 const { audioManager } = useAudioStore();
+const { playbackPosition } = storeToRefs(useAudioStore());
 
 const heightOffset = 30;
 const widthOffset = 200;
@@ -19,7 +20,7 @@ const playbackLine = ref<HTMLElement | null>(null);
 const tracksContainer = ref<HTMLElement | null>(null);
 const timelineBg = ref<HTMLElement | null>(null);
 const timeline = ref<HTMLElement | null>(null);
-let playbackPosition = 0;
+let relativePlaybackPosition = 0;
 
 onMounted(() => {
 	scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
@@ -36,11 +37,12 @@ onMounted(() => {
 		playbackLine.value!.style.top = Math.min(scrollTopBound, tracksContainer.value!.scrollTop) + 30 + "px";
 	});
 
-	tracksContainer.value?.addEventListener("wheel", async (e: WheelEvent) => {
+	tracksContainer.value?.addEventListener("wheel", (e: WheelEvent) => {
 		if (keysPressed.has("ControlLeft" || "ControlRight")) {
 			e.preventDefault();
 			zoomAmount.value += e.deltaY * 0.1;
-			tracksContainer.value!.scrollLeft = startPosition / zoomFactor.value - tracksContainer.value!.clientWidth / 2;
+			const containerMid = tracksContainer.value!.clientWidth / 2;
+			tracksContainer.value!.scrollLeft = startPosition / zoomFactor.value - containerMid;
 		}
 	});
 
@@ -48,14 +50,15 @@ onMounted(() => {
 	tracksContainer.value?.addEventListener("click", movePlaybackLine);
 
 	watch(zoomFactor, () => {
-		playbackLine.value!.style.left = playbackLineOffset + (startPosition + playbackPosition) / zoomFactor.value + "px";
+		playbackLine.value!.style.left = playbackLineOffset + (startPosition + relativePlaybackPosition) / zoomFactor.value + "px";
 	});
 });
 
 function movePlaybackLine(e: MouseEvent) {
 	startPosition = (tracksContainer.value!.scrollLeft + e.clientX - playbackLineOffset) * zoomFactor.value;
 	playbackLine.value!.style.left = playbackLineOffset + startPosition / zoomFactor.value + "px";
-	playbackPosition = 0;
+	playbackPosition.value = (playbackLine.value!.offsetLeft - widthOffset) / timeWidth.value;
+	relativePlaybackPosition = 0;
 }
 
 //TODO move this
@@ -75,8 +78,8 @@ function stepPlayback(timestamp: number) {
 
 	if (previousTimestamp !== timestamp) {
 		const count = Math.min(timeWidth.value * (elapsed / 1000), trackWidth.value);
-		playbackPosition = count * zoomFactor.value;
-		playbackLine.value!.style.left = playbackLineOffset + (startPosition + playbackPosition) / zoomFactor.value + "px";
+		relativePlaybackPosition = count * zoomFactor.value;
+		playbackLine.value!.style.left = playbackLineOffset + (startPosition + relativePlaybackPosition) / zoomFactor.value + "px";
 		if (count === trackWidth.value) done = true;
 	}
 
