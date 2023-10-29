@@ -59,8 +59,10 @@ onMounted(() => {
 });
 
 const callback: AnimationCallback = (animation: Animation) => {
-	relativePlaybackPosition = animation.elapsedTime * zoomFactor.value;
+	const progress = Math.min(timeWidth.value * animation.elapsedTime, trackWidth.value);
+	relativePlaybackPosition = progress * zoomFactor.value;
 	playbackLine.value!.style.left = playbackLineOffset + (animation.startX + relativePlaybackPosition) / zoomFactor.value + "px";
+	animation.isDone = progress === trackWidth.value;
 }
 
 playbackAnimation.callbacks.push(callback)

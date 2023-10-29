@@ -13,7 +13,6 @@ export interface Animation {
     isDone: boolean,
     elapsedTime: number,
     startX: number,
-    endX: Ref<number>,
     callbacks: AnimationCallback[],
     toggle(startCallback: () => void, stopCallback: () => void): void,
     start(): boolean,
@@ -23,7 +22,6 @@ export interface Animation {
 
 export const useAnimationStore = defineStore("animation", () => {
     const { audioManager } = useAudioStore();
-    const { timeWidth, trackWidth } = storeToRefs(useSettingsStore());
 
     const playbackAnimation: Animation = {
         isRunning: false,
@@ -45,12 +43,10 @@ export const useAnimationStore = defineStore("animation", () => {
             const self = playbackAnimation;
             self.startTime = self.startTime ?? timestamp;
 
-            const elapsed = (timestamp - self.startTime) / 1000; // Time to seconds
+            self.elapsedTime = (timestamp - self.startTime) / 1000; // Time to seconds
 
             if (self.previousTime !== timestamp) {
-                self.elapsedTime = Math.min(timeWidth.value * elapsed, self.endX.value);
                 self.callbacks.forEach(cb => cb(self));
-                self.isDone = self.elapsedTime === self.endX.value;
             }
 
             self.previousTime = timestamp;
@@ -67,7 +63,6 @@ export const useAnimationStore = defineStore("animation", () => {
             return false;
         },
         callbacks: [],
-        endX: trackWidth,
         startX: 0,
     }
 
