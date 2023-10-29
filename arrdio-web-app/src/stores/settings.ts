@@ -7,10 +7,13 @@ export const useSettingsStore = defineStore("settings", () => {
   const isSnapToGrid = ref(true);
   const initZoomAmount = 100;
   const zoomAmount = ref(initZoomAmount);
-  const zoomFactor = computed(() =>
+  const zoomFactor = computed(() => 
     Math.max(0.01, zoomAmount.value / initZoomAmount)
   );
-  const timeWidth = computed(() => 60 / zoomFactor.value); // width of a second
+  const timeWidth = computed(() => {
+    console.log(Math.max(0.01, 60 / zoomFactor.value))
+    return Math.max(0.01, 60 / zoomFactor.value)
+  }); // width of a second
   const beatWidth = computed(() => timeWidth.value / (bpm.value / 60));
   const keysPressed = new Set<string>();
 

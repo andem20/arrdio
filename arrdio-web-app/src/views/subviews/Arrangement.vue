@@ -28,7 +28,6 @@ const playbackLineOffset = 195;
 
 onMounted(() => {
 	scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
-	timeline.value!.style.width = tracksContainer.value!.scrollWidth - widthOffset + "px";
 
 	window.addEventListener("resize", () => {
 		scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
