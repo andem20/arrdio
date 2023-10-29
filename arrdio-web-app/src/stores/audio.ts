@@ -8,7 +8,7 @@ export interface AudioClip {
   position: number;
 }
 
-interface AudioManager {
+export interface AudioManager {
   audioCtx: AudioContext;
   sources: AudioBufferSourceNode[];
   play: () => void;
@@ -29,9 +29,11 @@ export const useAudioStore = defineStore("audio", () => {
         source.buffer = clip.audioBuffer;
         source.connect(this.audioCtx.destination);
         this.sources.push(source);
-        console.log(clip.delay, playbackPosition.value)
         const deltaDelay = clip.delay - playbackPosition.value;
-        source.start(clock + deltaDelay, deltaDelay < 0 ? Math.abs(deltaDelay) : 0);
+        source.start(
+          clock + deltaDelay,
+          deltaDelay < 0 ? Math.abs(deltaDelay) : 0
+    	  );
       });
     },
     stop: function () {

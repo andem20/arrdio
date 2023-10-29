@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import Track from '@/components/track/Track.vue';
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { COLORS } from '@/constants/colors';
 import { useSettingsStore } from '@/stores/settings';
 import { useAudioStore } from '@/stores/audio';
 import { storeToRefs } from 'pinia';
+import { useAnimationStore, type Animation, type AnimationCallback } from '@/stores/animation';
 
 const { beatWidth, timeWidth, trackWidth, zoomAmount, zoomFactor } = storeToRefs(useSettingsStore());
 const { timesignature, bars, keysPressed } = useSettingsStore();
-const { audioManager } = useAudioStore();
 const { playbackPosition } = storeToRefs(useAudioStore());
+const { audioManager } = useAudioStore();
+const { playbackAnimation } = useAnimationStore();
 
 const heightOffset = 30;
 const widthOffset = 200;
@@ -21,6 +23,8 @@ const tracksContainer = ref<HTMLElement | null>(null);
 const timelineBg = ref<HTMLElement | null>(null);
 const timeline = ref<HTMLElement | null>(null);
 let relativePlaybackPosition = 0;
+
+const playbackLineOffset = 195;
 
 onMounted(() => {
 	scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
@@ -42,7 +46,7 @@ onMounted(() => {
 			e.preventDefault();
 			zoomAmount.value += e.deltaY * 0.1;
 			const containerMid = tracksContainer.value!.clientWidth / 2;
-			tracksContainer.value!.scrollLeft = startPosition / zoomFactor.value - containerMid;
+			tracksContainer.value!.scrollLeft = playbackAnimation.startX / zoomFactor.value - containerMid;
 		}
 	});
 
@@ -50,58 +54,22 @@ onMounted(() => {
 	tracksContainer.value?.addEventListener("click", movePlaybackLine);
 
 	watch(zoomFactor, () => {
-		playbackLine.value!.style.left = playbackLineOffset + (startPosition + relativePlaybackPosition) / zoomFactor.value + "px";
+		playbackLine.value!.style.left = playbackLineOffset + (playbackAnimation.startX + relativePlaybackPosition) / zoomFactor.value + "px";
 	});
 });
 
+const callback: AnimationCallback = (animation: Animation) => {
+	relativePlaybackPosition = animation.elapsedTime * zoomFactor.value;
+	playbackLine.value!.style.left = playbackLineOffset + (animation.startX + relativePlaybackPosition) / zoomFactor.value + "px";
+}
+
+playbackAnimation.callbacks.push(callback)
+
 function movePlaybackLine(e: MouseEvent) {
-	startPosition = (tracksContainer.value!.scrollLeft + e.clientX - playbackLineOffset) * zoomFactor.value;
-	playbackLine.value!.style.left = playbackLineOffset + startPosition / zoomFactor.value + "px";
+	playbackAnimation.startX = (tracksContainer.value!.scrollLeft + e.clientX - playbackLineOffset) * zoomFactor.value;
+	playbackLine.value!.style.left = playbackLineOffset + playbackAnimation.startX / zoomFactor.value + "px";
 	playbackPosition.value = (playbackLine.value!.offsetLeft - widthOffset) / timeWidth.value;
 	relativePlaybackPosition = 0;
-}
-
-//TODO move this
-let start: number | undefined;
-let previousTimestamp: number | undefined;
-let done = false;
-let running = false;
-let activeAnimationFrame: number;
-const playbackLineOffset = 195;
-let startPosition = 0;
-
-function stepPlayback(timestamp: number) {
-	if (start === undefined) {
-		start = timestamp;
-	}
-	const elapsed = timestamp - start!;
-
-	if (previousTimestamp !== timestamp) {
-		const count = Math.min(timeWidth.value * (elapsed / 1000), trackWidth.value);
-		relativePlaybackPosition = count * zoomFactor.value;
-		playbackLine.value!.style.left = playbackLineOffset + (startPosition + relativePlaybackPosition) / zoomFactor.value + "px";
-		if (count === trackWidth.value) done = true;
-	}
-
-	previousTimestamp = timestamp;
-
-	if (!done && running) {
-		activeAnimationFrame = window.requestAnimationFrame(stepPlayback);
-	}
-}
-
-function startPlayback() {
-	if (!running) {
-		audioManager.play();
-		activeAnimationFrame = window.requestAnimationFrame(stepPlayback);
-	} else {
-		start = undefined;
-		previousTimestamp = undefined;
-		audioManager.stop();
-		window.cancelAnimationFrame(activeAnimationFrame);
-	}
-
-	running = !running;
 }
 
 window.addEventListener("keydown", (e: KeyboardEvent) => {
@@ -110,7 +78,7 @@ window.addEventListener("keydown", (e: KeyboardEvent) => {
 	keysPressed.add(e.code);
 
 	if (e.code === "Space") {
-		startPlayback();
+		playbackAnimation.toggle(audioManager.play, audioManager.stop);
 	}
 });
 
