@@ -1,19 +1,47 @@
 <script lang="ts" setup>
+import { useAnimationStore } from '@/stores/animation';
 import { useAudioStore } from '@/stores/audio';
+import { useSettingsStore } from '@/stores/settings';
 import { storeToRefs } from 'pinia';
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
 
-defineProps({
+const { id } = defineProps({
     name: String,
     id: Number,
     color: String
 })
 
-const { playbackPosition } = storeToRefs(useAudioStore());
+const { audioClips } = useAudioStore();
+const { playbackAnimation } = useAnimationStore();
+const { timeWidth } = storeToRefs(useSettingsStore());
 
-watch(playbackPosition, (position) => {
-    console.log(position)
-})
+const volumeBar = ref<HTMLElement | null>(null);
+
+let isPlayingTrack = false;
+
+watch(() => playbackAnimation.elapsedTime, (elapsedTime) => {
+    audioClips.filter(clip => clip.track === id).forEach(clip => {
+        const clipStart = clip.delay * timeWidth.value;
+        const clipEnd = clipStart + clip.audioBuffer.duration * timeWidth.value;
+        const playbackProgress = playbackAnimation.startX + elapsedTime * timeWidth.value;
+        
+        if (volumeBar !== null) {
+            if (playbackProgress >= clipStart && playbackProgress <= clipEnd) {
+                isPlayingTrack = true;
+                const clipIndex = Math.floor(playbackProgress - clipStart);
+                const volume = clip.reducedAudioBuffer![clipIndex];
+                volumeBar.value!.style.width = volume * 500 + "%";
+                return;
+            }
+
+            isPlayingTrack = isPlayingTrack || false;
+        }
+
+        if (!isPlayingTrack) {
+            volumeBar.value!.style.width = 0 + "%";
+        }
+    });
+});
 
 
 </script>
@@ -24,7 +52,7 @@ watch(playbackPosition, (position) => {
         <div class="track-info-content">
             <div>{{ name + " " + id }}</div>
             <div class="track-volume">
-                <div class="track-volume-bar"></div>
+                <div class="track-volume-bar" ref="volumeBar"></div>
             </div>
         </div>
     </div>

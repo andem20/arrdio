@@ -11,7 +11,6 @@ export const useSettingsStore = defineStore("settings", () => {
     Math.max(0.01, zoomAmount.value / initZoomAmount)
   );
   const timeWidth = computed(() => {
-    console.log(Math.max(0.01, 60 / zoomFactor.value))
     return Math.max(0.01, 60 / zoomFactor.value)
   }); // width of a second
   const beatWidth = computed(() => timeWidth.value / (bpm.value / 60));

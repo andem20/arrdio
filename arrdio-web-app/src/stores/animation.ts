@@ -1,6 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { useAudioStore } from "./audio";
-import { type Ref } from "vue";
+import { ref, type Ref } from "vue";
 import { useSettingsStore } from "./settings";
 
 export type AnimationCallback = (animation: Animation) => void;
@@ -11,7 +11,7 @@ export interface Animation {
     startTime?: number,
     previousTime?: number,
     isDone: boolean,
-    elapsedTime: number,
+    elapsedTime: Ref<number>,
     startX: number,
     callbacks: AnimationCallback[],
     toggle(startCallback: () => void, stopCallback: () => void): void,
@@ -27,7 +27,7 @@ export const useAnimationStore = defineStore("animation", () => {
         isRunning: false,
         currentAnimationFrame: 0,
         isDone: false,
-        elapsedTime: 0,
+        elapsedTime: ref(0),
 
         toggle(): void {
             this.isRunning = this.isRunning ? this.stop() : this.start();
@@ -43,7 +43,7 @@ export const useAnimationStore = defineStore("animation", () => {
             const self = playbackAnimation;
             self.startTime = self.startTime ?? timestamp;
 
-            self.elapsedTime = (timestamp - self.startTime) / 1000; // Time to seconds
+            self.elapsedTime.value = (timestamp - self.startTime) / 1000; // Time to seconds
 
             if (self.previousTime !== timestamp) {
                 self.callbacks.forEach(cb => cb(self));

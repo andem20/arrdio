@@ -18,7 +18,7 @@ onMounted(() => {
     if (audioClip == undefined) return;
 
     const ctx = canvas.value?.getContext("2d");
-    const chunkSize = computed(() => audioClip.audioBuffer.sampleRate! / timeWidth.value);
+    const chunkSize = computed(() => audioClip.audioBuffer.sampleRate / timeWidth.value);
 
     canvas.value!.width = trackWidth.value;
     drawAudioClip(audioClip.audioBuffer, ctx!, chunkSize.value);
@@ -43,10 +43,15 @@ function drawChannel(buffer: AudioBuffer, ctx: CanvasRenderingContext2D, chunkSi
     const data = buffer.getChannelData(channel);
     ctx.fillStyle = "#ffffff";
 
+    const reducedAudioBuffer: number[] = [];
+
     for (let i = chunkSize; i <= data.length; i += chunkSize) {
         const value = data.slice(i - chunkSize, i).reduce((a, b) => a + b) / chunkSize;
+        reducedAudioBuffer.push(value);
         ctx.fillRect(i / chunkSize - 1, 50, 1, (value * 500) * (channel == 0 ? 1 : -1));
     }
+
+    audioClip!.reducedAudioBuffer = reducedAudioBuffer;
 }
 
 </script>

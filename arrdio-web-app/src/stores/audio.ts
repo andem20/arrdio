@@ -6,6 +6,7 @@ export interface AudioClip {
   delay: number;
   track: number | undefined;
   position: number;
+  reducedAudioBuffer?: number[];
 }
 
 export interface AudioManager {
