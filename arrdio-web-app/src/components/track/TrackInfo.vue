@@ -13,7 +13,7 @@ const { id } = defineProps({
 
 const { audioClips } = useAudioStore();
 const { playbackAnimation } = useAnimationStore();
-const { timeWidth } = storeToRefs(useSettingsStore());
+const { timeWidth, zoomFactor } = storeToRefs(useSettingsStore());
 
 const volumeBar = ref<HTMLElement | null>(null);
 
@@ -23,22 +23,22 @@ watch(() => playbackAnimation.elapsedTime, (elapsedTime) => {
     audioClips.filter(clip => clip.track === id).forEach(clip => {
         const clipStart = clip.delay * timeWidth.value;
         const clipEnd = clipStart + clip.audioBuffer.duration * timeWidth.value;
-        const playbackProgress = playbackAnimation.startX + elapsedTime * timeWidth.value;
+        const playbackProgress = playbackAnimation.startX / zoomFactor.value + elapsedTime * timeWidth.value;
         
         if (volumeBar !== null) {
             if (playbackProgress >= clipStart && playbackProgress <= clipEnd) {
                 isPlayingTrack = true;
                 const clipIndex = Math.floor(playbackProgress - clipStart);
                 const volume = clip.reducedAudioBuffer![clipIndex];
-                volumeBar.value!.style.width = volume * 500 + "%";
+                volumeBar.value!.style.width = volume * 100 + "%";
                 return;
             }
 
             isPlayingTrack = isPlayingTrack || false;
-        }
-
-        if (!isPlayingTrack) {
-            volumeBar.value!.style.width = 0 + "%";
+    
+            if (!isPlayingTrack) {
+                volumeBar.value!.style.width = 0 + "%";
+            }
         }
     });
 });

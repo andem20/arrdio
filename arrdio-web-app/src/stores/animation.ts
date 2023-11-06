@@ -22,6 +22,7 @@ export interface Animation {
 
 export const useAnimationStore = defineStore("animation", () => {
     const { audioManager } = useAudioStore();
+    const playbackLineOffset = 195;
 
     const playbackAnimation: Animation = {
         isRunning: false,
@@ -67,6 +68,7 @@ export const useAnimationStore = defineStore("animation", () => {
     }
 
     return {
+        playbackLineOffset,
         playbackAnimation
     }
 });

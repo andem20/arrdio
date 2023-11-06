@@ -11,7 +11,7 @@ const { beatWidth, timeWidth, trackWidth, zoomAmount, zoomFactor } = storeToRefs
 const { timesignature, bars, keysPressed } = useSettingsStore();
 const { playbackPosition } = storeToRefs(useAudioStore());
 const { audioManager } = useAudioStore();
-const { playbackAnimation } = useAnimationStore();
+const { playbackAnimation, playbackLineOffset } = useAnimationStore();
 
 const heightOffset = 30;
 const widthOffset = 200;
@@ -23,8 +23,6 @@ const tracksContainer = ref<HTMLElement | null>(null);
 const timelineBg = ref<HTMLElement | null>(null);
 const timeline = ref<HTMLElement | null>(null);
 let relativePlaybackPosition = 0;
-
-const playbackLineOffset = 195;
 
 onMounted(() => {
 	scrollTopBound = tracksContainer.value!.scrollHeight - timelineBg.value!.offsetHeight;
@@ -67,7 +65,7 @@ const callback: AnimationCallback = (animation: Animation) => {
 playbackAnimation.callbacks.push(callback)
 
 function movePlaybackLine(e: MouseEvent) {
-	playbackAnimation.startX = (tracksContainer.value!.scrollLeft + e.clientX - playbackLineOffset) * zoomFactor.value;
+	playbackAnimation.startX = (tracksContainer.value!.scrollLeft + e.clientX - playbackLineOffset - 5) * zoomFactor.value;
 	playbackLine.value!.style.left = playbackLineOffset + playbackAnimation.startX / zoomFactor.value + "px";
 	playbackPosition.value = (playbackLine.value!.offsetLeft - widthOffset) / timeWidth.value;
 	relativePlaybackPosition = 0;

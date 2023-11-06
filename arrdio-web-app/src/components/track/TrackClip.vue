@@ -12,7 +12,7 @@ const { audioClip } = defineProps({
 const { timeWidth, zoomFactor } = storeToRefs(useSettingsStore());
 const trackWidth = computed(() => audioClip!.audioBuffer.duration * timeWidth.value);
 
-const canvas = ref<InstanceType<typeof HTMLCanvasElement> | null>(null);
+const canvas = ref<HTMLCanvasElement | null>(null);
 
 onMounted(() => {
     if (audioClip == undefined) return;
@@ -48,7 +48,7 @@ function drawChannel(buffer: AudioBuffer, ctx: CanvasRenderingContext2D, chunkSi
     for (let i = chunkSize; i <= data.length; i += chunkSize) {
         const value = data.slice(i - chunkSize, i).reduce((a, b) => a + b) / chunkSize;
         reducedAudioBuffer.push(value);
-        ctx.fillRect(i / chunkSize - 1, 50, 1, (value * 500) * (channel == 0 ? 1 : -1));
+        ctx.fillRect(i / chunkSize - 1, 50, 1, (value * 100));
     }
 
     audioClip!.reducedAudioBuffer = reducedAudioBuffer;
