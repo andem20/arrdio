@@ -46,10 +46,15 @@ function drawChannel(buffer: AudioBuffer, ctx: CanvasRenderingContext2D, chunkSi
     const reducedAudioBuffer: number[] = [];
 
     for (let i = chunkSize; i <= data.length; i += chunkSize) {
-        const value = data.slice(i - chunkSize, i).reduce((a, b) => a + b) / chunkSize;
-        reducedAudioBuffer.push(value);
-        ctx.fillRect(i / chunkSize - 1, 50, 1, (value * 100));
+        const dataSlice = data.slice(i - chunkSize, i);
+        const maxIndex = dataSlice.indexOf(Math.max(...dataSlice));
+        const minIndex = dataSlice.indexOf(Math.min(...dataSlice));
+        reducedAudioBuffer.push(dataSlice[maxIndex]);
+        ctx.fillRect(i / chunkSize - 1, 50, 1, (dataSlice[maxIndex] * 100));
+        ctx.fillRect(i / chunkSize - 1, 50, 1, (dataSlice[minIndex] * 100));
     }
+
+    console.log(data.filter(value => value > 0.7))
 
     audioClip!.reducedAudioBuffer = reducedAudioBuffer;
 }
